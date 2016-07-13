@@ -8,6 +8,8 @@ import net.achalaggarwal.workerbee.ddl.misc.TruncateTable;
 import net.achalaggarwal.workerbee.dr.SelectQuery;
 import net.achalaggarwal.workerbee.dr.selectfunction.Constant;
 import net.achalaggarwal.workerbee.expression.BooleanExpression;
+import net.achalaggarwal.workerbee.security.Authenticator;
+import net.achalaggarwal.workerbee.security.ByPassAuthenticator;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -54,10 +56,15 @@ public class Repository implements AutoCloseable {
   }
 
   public Repository(String connectionUrl, Properties properties) throws SQLException, IOException {
-    this(connectionUrl, properties, new Configuration());
+    this(connectionUrl, properties, new Configuration(), new ByPassAuthenticator());
   }
 
-  public Repository(String connectionUrl, Properties properties, Configuration conf) throws SQLException, IOException {
+  public Repository(String connectionUrl, Properties properties, Configuration conf) throws IOException, SQLException {
+    this(connectionUrl, properties, conf, new ByPassAuthenticator());
+  }
+
+  public Repository(String connectionUrl, Properties properties, Configuration conf, Authenticator authenticator)
+    throws SQLException, IOException {
     try {
       Class.forName(DRIVER_NAME);
     } catch (ClassNotFoundException e) {
@@ -65,6 +72,7 @@ public class Repository implements AutoCloseable {
       System.exit(1);
     }
 
+    authenticator.authenticate();
     LOGGER.info("Connecting to : " + connectionUrl);
     connection = DriverManager.getConnection(connectionUrl, properties);
     fso = new FSOperation(conf);
