@@ -15,18 +15,18 @@ public class SecurityUtil {
   private static final Logger logger = LoggerFactory.getLogger(SecurityUtil.class);
 
   public static void login(
-    String principal,
+    String keyTabUser,
     String keytabPath,
     String kerberosConfPath,
     String debug
   ) throws IOException {
     System.setProperty("sun.security.krb5.debug", debug);
-    logger.info(format("login with principal=%s, keytabPath=%s, kerberosConfPath=%s", principal, keytabPath, kerberosConfPath));
+    logger.info(format("login with principal=%s, keytabPath=%s, kerberosConfPath=%s", keyTabUser, keytabPath, kerberosConfPath));
     System.setProperty("java.security.krb5.conf", kerberosConfPath);
 
     conf.set("hadoop.security.authentication", "Kerberos");
 
     UserGroupInformation.setConfiguration(conf);
-    loginUserFromKeytab(principal, keytabPath);
+    loginUserFromKeytab(keyTabUser, keytabPath);
   }
 }

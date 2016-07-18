@@ -4,17 +4,17 @@ import java.io.IOException;
 
 public class KerberosAuthenticator implements Authenticator{
 
-  private String principal;
+  private String keyTabUser;
   private String keytabPath;
   private String kerberosConfPath;
   private String debug;
 
-  public KerberosAuthenticator(String principal,
+  public KerberosAuthenticator(String keyTabUser,
                                String keytabPath,
                                String kerberosConfPath,
                                String debug) {
 
-    this.principal = principal;
+    this.keyTabUser = keyTabUser;
     this.keytabPath = keytabPath;
     this.kerberosConfPath = kerberosConfPath;
     this.debug = debug;
@@ -22,6 +22,6 @@ public class KerberosAuthenticator implements Authenticator{
 
   @Override
   public void authenticate() throws IOException {
-    SecurityUtil.login(principal, keytabPath, kerberosConfPath, debug);
+    SecurityUtil.login(keyTabUser, keytabPath, kerberosConfPath, debug);
   }
 }
