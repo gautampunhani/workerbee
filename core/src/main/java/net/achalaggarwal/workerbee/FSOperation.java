@@ -48,18 +48,21 @@ public class FSOperation {
   }
 
   public <T extends AvroTable> Path writeAvroRow(T table, Row... rows) throws IOException {
-    Path hdfsPath = new Path(createTempFile());
-    fileSystem.mkdirs(hdfsPath.getParent());
+    try(FileSystem fileSystem = FileSystem.get(conf)) {
 
-    try(DataFileWriter<SpecificRecord> writer =
-          new DataFileWriter<>(new SpecificDatumWriter<SpecificRecord>(table.getSchema()))){
-      writer.create(table.getSchema(), fileSystem.create(hdfsPath, OVERWRITE));
+      Path hdfsPath = new Path(createTempFile());
+      fileSystem.mkdirs(hdfsPath.getParent());
 
-      for (Row row : rows) {
-        writer.append(RowUtils.getSpecificRecord(row));
+      try (DataFileWriter<SpecificRecord> writer =
+             new DataFileWriter<>(new SpecificDatumWriter<SpecificRecord>(table.getSchema()))) {
+        writer.create(table.getSchema(), fileSystem.create(hdfsPath, OVERWRITE));
+
+        for (Row row : rows) {
+          writer.append(RowUtils.getSpecificRecord(row));
+        }
       }
+      return hdfsPath;
     }
-    return hdfsPath;
   }
 
   public Path writeTableSchema(AvroTable table) throws IOException {
@@ -70,41 +73,53 @@ public class FSOperation {
   }
 
   public List<String> readRecords(String path) throws IOException {
-    Path hdfsPath = new Path(path);
+    try(FileSystem fileSystem = FileSystem.get(conf)) {
+      Path hdfsPath = new Path(path);
 
-    List<String> rows = new ArrayList<>();
+      List<String> rows = new ArrayList<>();
 
-    RemoteIterator<LocatedFileStatus> iter = fileSystem.listFiles(hdfsPath, NOT_RECURSIVE);
-    while (iter.hasNext()) {
-      rows.addAll(readFile(iter.next().getPath()));
+      RemoteIterator<LocatedFileStatus> iter = fileSystem.listFiles(hdfsPath, NOT_RECURSIVE);
+      while (iter.hasNext()) {
+        rows.addAll(readFile(iter.next().getPath()));
+      }
+
+      return rows;
     }
-
-    return rows;
   }
 
   private List<String> readFile(Path hdfsPath) throws IOException {
-    List<String> lines = new ArrayList<>();
+    try(FileSystem fileSystem = FileSystem.get(conf)) {
+      List<String> lines = new ArrayList<>();
 
-    String line;
-    try(BufferedReader dataInputStream = new BufferedReader(new InputStreamReader(fileSystem.open(hdfsPath)))){
-      while ((line = dataInputStream.readLine())!= null){
-        lines.add(line);
+      String line;
+      try (BufferedReader dataInputStream = new BufferedReader(new InputStreamReader(fileSystem.open(hdfsPath)))) {
+        while ((line = dataInputStream.readLine()) != null) {
+          lines.add(line);
+        }
       }
-    }
 
-    return lines;
+      return lines;
+    }
   }
 
   private Path writeString(String path, String content) throws IOException {
-    Path hdfsPath = new Path(path);
-    fileSystem.mkdirs(hdfsPath.getParent());
+    try(FileSystem fileSystem = FileSystem.get(conf)) {
+      Path hdfsPath = new Path(path);
+      fileSystem.mkdirs(hdfsPath.getParent());
 
-    try(FSDataOutputStream dataOutputStream = fileSystem.create(hdfsPath, OVERWRITE)){
-      byte[] bytes = content.getBytes();
-      dataOutputStream.write(bytes, 0, bytes.length);
+      try(FSDataOutputStream dataOutputStream = fileSystem.create(hdfsPath, OVERWRITE)){
+        byte[] bytes = content.getBytes();
+        dataOutputStream.write(bytes, 0, bytes.length);
+      }
+      return hdfsPath;
     }
+  }
 
-    return hdfsPath;
+  public void deleteDir(String path) throws IOException {
+    try(FileSystem fileSystem = FileSystem.get(conf)) {
+      Path hdfsPath = new Path(path);
+      fileSystem.delete(hdfsPath, true);
+    }
   }
 
   public boolean clear(Table table) throws IOException {
