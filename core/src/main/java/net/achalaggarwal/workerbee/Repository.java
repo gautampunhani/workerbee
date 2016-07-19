@@ -76,7 +76,6 @@ public class Repository implements AutoCloseable {
     LOGGER.info("Connecting to : " + connectionUrl);
     connection = DriverManager.getConnection(connectionUrl, properties);
     fso = new FSOperation(conf);
-
     hiveVar(AvroTable.AVRO_SCHEMA_URL_PATH, fso.getAvroSchemaBasePath());
   }
 
