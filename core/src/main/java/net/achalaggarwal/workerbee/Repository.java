@@ -130,7 +130,7 @@ public class Repository implements AutoCloseable {
     return this;
   }
 
-  private Repository clear(Table table) throws SQLException, IOException {
+  public Repository clear(Table table) throws SQLException, IOException {
     if (table.isExternal()){
       fso.clear(table);
 
