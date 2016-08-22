@@ -5,7 +5,7 @@
   <groupId>net.achalaggarwal.workerbee</groupId>
   <artifactId>workerbee</artifactId>
   <packaging>pom</packaging>
-  <version>3.1-SNAPSHOT</version>
+  <version>3.1.1-SNAPSHOT</version>
 
   <name>Workerbee</name>
   <description>A worker bee for your hive.</description>
@@ -23,29 +23,23 @@
     </license>
   </licenses>
 
-  <scm>
-    <url>git@github.com:Achal-Aggarwal/workerbee.git</url>
-    <connection>scm:git:git@github.com:Achal-Aggarwal/workerbee.git</connection>
-    <tag>HEAD</tag>
-  </scm>
-
-  <developers>
-    <developer>
-      <id>Achal-Aggarwal</id>
-      <name>Achal Aggarwal</name>
-      <url>github.com/Achal-Aggarwal</url>
-    </developer>
-  </developers>
-
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
+  <repositories>
     <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <id>nexus</id>
+      <url>http://arlolgacip01.ecorp.cat.com:8081/content/repositories/snapshots/</url>
     </repository>
+  </repositories>
+  <distributionManagement>
+    <repository>
+      <id>olga-deployment</id>
+      <name>Internal Releases</name>
+      <url>http://arlolgacip01.ecorp.cat.com:8081/content/repositories/release/</url>
+    </repository>
+    <snapshotRepository>
+      <id>olga-deployment</id>
+      <name>Internal Snapshot Releases</name>
+      <url>http://arlolgacip01.ecorp.cat.com:8081/content/repositories/snapshots/</url>
+    </snapshotRepository>
   </distributionManagement>
 
   <modules>

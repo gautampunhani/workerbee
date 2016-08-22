@@ -35,7 +35,7 @@ public class FSOperation {
   }
 
   public String createTempFile(){
-    return getTempPath() + "/file-" + Utils.getRandomPositiveNumber();
+    return getTempPath() + "/file-" + Utils.getRandomPositiveNumber() + conf.get("hive.output.file.extension", "");
   }
 
   public <T extends TextTable> Path writeTextRow(T table, Row... rows) throws IOException {
