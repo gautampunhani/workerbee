@@ -34,6 +34,7 @@ public class Repository implements AutoCloseable {
   private static final String JDBC_HIVE2_EMBEDDED_MODE_URL = "jdbc:hive2://";
 
   public static final Path ROOT_DIR = Paths.get("/", "tmp", "workerbee", valueOf(getRandomPositiveNumber()));
+  public static final String MAPRED_JOB_QUEUE_NAME = "mapred.job.queue.name";
 
   @Getter
   private Map<String, String> hiveVarMap = new HashMap<>();
@@ -42,6 +43,7 @@ public class Repository implements AutoCloseable {
 
   private Connection connection;
   private FSOperation fso;
+  private Authenticator authenticator;
 
   public static Repository TemporaryRepository() throws IOException, SQLException {
     return TemporaryRepository(ROOT_DIR);
@@ -65,6 +67,7 @@ public class Repository implements AutoCloseable {
 
   public Repository(String connectionUrl, Properties properties, Configuration conf, Authenticator authenticator)
     throws SQLException, IOException {
+    this.authenticator = authenticator;
     try {
       Class.forName(DRIVER_NAME);
     } catch (ClassNotFoundException e) {
@@ -77,6 +80,7 @@ public class Repository implements AutoCloseable {
     connection = DriverManager.getConnection(connectionUrl, properties);
     fso = new FSOperation(conf);
     hiveVar(AvroTable.AVRO_SCHEMA_URL_PATH, fso.getAvroSchemaBasePath());
+    set(MAPRED_JOB_QUEUE_NAME, conf.get(MAPRED_JOB_QUEUE_NAME, "default"));
   }
 
   private Repository createDefaultAndDual() throws SQLException, IOException {
@@ -140,9 +144,13 @@ public class Repository implements AutoCloseable {
     return execute(new TruncateTable(table).generate());
   }
 
-  public Repository hiveVar(String var, String val) throws SQLException {
+  public Repository set(String var, String val) throws SQLException {
     hiveVarMap.put(var, val);
-    return execute("SET hivevar:" + var + "=" + val);
+    return execute("SET " + var + "=" + val);
+  }
+
+  public Repository hiveVar(String var, String val) throws SQLException {
+    return set("hivevar:" + var, val);
   }
 
   public Repository execute(Query loadDataQuery) throws SQLException {
